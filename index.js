@@ -15,6 +15,7 @@ async function run() {
       
       const collection = client.db("products").collection("items");
       const orderCollection=client.db("products").collection("order");
+      const reviewCollection=client.db("products").collection("review");
       // Query for a movie that has the title 'The Room'
       app.get('/items',async(req,res)=>{
         const query = {};
@@ -50,6 +51,12 @@ async function run() {
         const service=await orderCollection.deleteOne(query);
         res.send(service);
    })
+
+   app.post('/review',async(req,res)=>{
+    const productOrder=req.body;
+    const result=await reviewCollection.insertOne(productOrder);
+    res.send(result);
+  })
 
       
       
