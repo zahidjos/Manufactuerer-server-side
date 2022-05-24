@@ -14,6 +14,7 @@ async function run() {
       await client.connect();
       
       const collection = client.db("products").collection("items");
+      const orderCollection=client.db("products").collection("order");
       // Query for a movie that has the title 'The Room'
       app.get('/items',async(req,res)=>{
         const query = {};
@@ -28,11 +29,18 @@ async function run() {
            const service=await collection.findOne(query);
            res.send(service);
       })
+
+      app.post('/order',async(req,res)=>{
+        const productOrder=req.body;
+        const result=await orderCollection.insertOne(productOrder);
+        res.send(result);
+      })
+
       
       
       
       // since this method returns the matched document, not a cursor, print it directly
-      console.log(movie);
+      
     } finally {
      
     }
