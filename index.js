@@ -1,6 +1,8 @@
  const express=require('express')
  const cors=require('cors');
  const app=express();
+ const jwt = require('jsonwebtoken');
+ require('dotenv').config();
  const port=process.env.PORT||5000
  app.use(cors());
  app.use(express.json());
@@ -16,6 +18,7 @@ async function run() {
       const collection = client.db("products").collection("items");
       const orderCollection=client.db("products").collection("order");
       const reviewCollection=client.db("products").collection("review");
+      const userCollection=client.db("products").collection("user");
       // Query for a movie that has the title 'The Room'
       app.get('/items',async(req,res)=>{
         const query = {};
@@ -65,21 +68,28 @@ async function run() {
     res.send(service);
   })
 
-      
-      
-      
-      // since this method returns the matched document, not a cursor, print it directly
-      
-    } finally {
+  // make user part
+
+  app.put('/users/:email',async(req,res)=>{
+    const email=req.params.email;
+    const query = {email:email};
+    const userEmail=req.body;
+    const options = { upsert: true };
+    const updateDoc = {
+      $set: userEmail
+    };
+    const result = await userCollection.updateOne(query, updateDoc, options);
+    res.send(service);
+  })
+
+   } finally {
      
     }
   }
 
   run().catch(console.dir);
 
- app.get('/',(req,res)=>{
-     res.end("hi joz");
- })
+ 
  app.listen(port,()=>{
      console.log("my server",port);
  })
