@@ -38,11 +38,18 @@ async function run() {
       const reviewCollection=client.db("products").collection("review");
       const userCollection=client.db("products").collection("user");
       // Query for a movie that has the title 'The Room'
+      // item part
       app.get('/items',async(req,res)=>{
         const query = {};
         const cursor = collection.find(query);
         const service= await cursor.toArray();
         res.send(service);
+      })
+
+      app.post('/items',async(req,res)=>{
+        const product=req.body;
+        const result=await collection.insertOne(product);
+        res.send(result);
       })
 
       app.get('/purchase/:id',async(req,res)=>{
