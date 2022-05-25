@@ -11,6 +11,24 @@
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = "mongodb+srv://Manufacture:88G5vqedN4rIuXIQ@cluster0.vgphl.mongodb.net/?retryWrites=true&w=majority";
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
+
+function verifyJWT(req,res,next){
+const authHeader=req.headers.authorization;
+if(!authHeader){
+  return res.status(401).send({message:"un Authorization"})
+}
+const token=authHeader.split(' ')[1];
+jwt.verify(token, process.env.JWT_KEY, function(err, decoded) {
+ if(err){
+   return res.status(403).send({message:"Forbidden Access"})
+ }
+ req.decoded=decoded;
+ next();
+});
+
+}
+
+
 async function run() {
     try {
       await client.connect();
@@ -79,6 +97,14 @@ async function run() {
       $set: userEmail
     };
     const result = await userCollection.updateOne(query, updateDoc, options);
+    var token = jwt.sign({ foo: 'bar' },process.env.JWT_KEY,{ expiresIn: '1h' });
+    res.send({result,token});
+  })
+
+  app.get('/users',verifyJWT,async(req,res)=>{
+    const query = {};
+    const cursor = userCollection.find(query);
+    const service= await cursor.toArray();
     res.send(service);
   })
 
