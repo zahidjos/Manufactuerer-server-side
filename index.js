@@ -52,6 +52,7 @@ async function run() {
            res.send(service);
       })
 
+// order section
       app.post('/order',async(req,res)=>{
         const productOrder=req.body;
         const result=await orderCollection.insertOne(productOrder);
@@ -63,15 +64,22 @@ async function run() {
         const cursor= orderCollection.find(query);
         const service=await cursor.toArray();
         res.send(service);
-
-
-      })
+})
       app.delete('/order/:id',async(req,res)=>{
         const id=req.params.id;
         const query = {_id:ObjectId(id)};
         const service=await orderCollection.deleteOne(query);
         res.send(service);
    })
+   app.get('/mangeOrder',verifyJWT,async(req,res)=>{
+    
+    const query={};
+    const cursor= orderCollection.find(query);
+    const service=await cursor.toArray();
+    res.send(service);
+   })
+
+  //  Review section
 
    app.post('/review',async(req,res)=>{
     const productOrder=req.body;
