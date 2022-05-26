@@ -180,7 +180,7 @@ app.patch('/order/:id',async(req,res)=>{
   // payment intend part
   app.post("/create-payment-intent", async (req, res) => {
     const service = req.body;
-    const price=service.price;
+    const price= parseInt(service.price);
     const amount=price*100;
       console.log(amount);
 
