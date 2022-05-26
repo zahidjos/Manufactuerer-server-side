@@ -182,6 +182,7 @@ app.patch('/order/:id',async(req,res)=>{
     const service = req.body;
     const price=service.price;
     const amount=price*100;
+      console.log(amount);
 
      const paymentIntent = await stripe.paymentIntents.create({
       amount:amount,
