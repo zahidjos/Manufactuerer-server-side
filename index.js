@@ -10,7 +10,7 @@
 
  
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-const uri = "mongodb+srv://Manufacture:88G5vqedN4rIuXIQ@cluster0.vgphl.mongodb.net/?retryWrites=true&w=majority";
+const uri = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.vgphl.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 function verifyJWT(req,res,next){
@@ -38,6 +38,7 @@ async function run() {
       const orderCollection=client.db("products").collection("order");
       const reviewCollection=client.db("products").collection("review");
       const userCollection=client.db("products").collection("user");
+      const profileCollection=client.db("products").collection("profile");
       // Query for a movie that has the title 'The Room'
       // item part
       app.get('/items',async(req,res)=>{
@@ -192,6 +193,29 @@ app.patch('/order/:id',async(req,res)=>{
   
     res.send({ clientSecret: paymentIntent.client_secret});
   });
+
+
+  // profile part
+  app.put('/profile/:email',async(req,res)=>{
+    const email=req.params.email;
+    const query = {email:email};
+    const userEmail=req.body;
+    const options = { upsert: true };
+    const updateDoc = {
+      $set: userEmail
+    };
+    const result = await profileCollection.updateOne(query, updateDoc, options);
+    
+    res.send(result);
+  })
+   
+  app.get('/profile/:email',async(req,res)=>{
+    const email=req.params.email;
+    const query = {email:email};
+    const service = await profileCollection.findOne(query);
+    res.send(service);
+  })
+
 
 
    } finally {
