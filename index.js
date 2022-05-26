@@ -3,6 +3,7 @@
  const app=express();
  const jwt = require('jsonwebtoken');
  require('dotenv').config();
+ const stripe = require("stripe")(process.env.STRIPE_KEY)
  const port=process.env.PORT||5000
  app.use(cors());
  app.use(express.json());
@@ -51,6 +52,14 @@ async function run() {
         const result=await collection.insertOne(product);
         res.send(result);
       })
+      app.delete('/items/:id',async(req,res)=>{
+        const id=req.params.id;
+        const query = {_id:ObjectId(id)};
+        const service=await collection.deleteOne(query);
+        res.send(service);
+   })
+
+      
 
       app.get('/purchase/:id',async(req,res)=>{
            const id=req.params.id;
@@ -72,12 +81,36 @@ async function run() {
         const service=await cursor.toArray();
         res.send(service);
 })
-      app.delete('/order/:id',async(req,res)=>{
+       app.delete('/order/:id',async(req,res)=>{
         const id=req.params.id;
         const query = {_id:ObjectId(id)};
         const service=await orderCollection.deleteOne(query);
         res.send(service);
    })
+   
+
+
+   app.get('/order/:id',async(req,res)=>{
+    const id=req.params.id;
+    const query = {_id:ObjectId(id)};
+    const service=await orderCollection.findOne(query);
+    res.send(service);
+})
+
+app.patch('/order/:id',async(req,res)=>{
+  const id=req.params.id;
+  const query = {_id:ObjectId(id)};
+  const paymentId=req.body;
+  console.log(paymentId)
+  const updateDoc = {
+    $set:paymentId
+  };
+
+  const service=await orderCollection.updateOne(query,updateDoc);
+  res.send(service);
+})
+
+
    app.get('/mangeOrder',verifyJWT,async(req,res)=>{
     
     const query={};
@@ -112,7 +145,7 @@ async function run() {
       $set: userEmail
     };
     const result = await userCollection.updateOne(query, updateDoc, options);
-    var token = jwt.sign({ foo: 'bar' },process.env.JWT_KEY,{ expiresIn: '1h' });
+    var token = jwt.sign({ foo: 'bar' },process.env.JWT_KEY,{ expiresIn: '11h' });
     res.send({result,token});
   })
 
@@ -122,6 +155,44 @@ async function run() {
     const service= await cursor.toArray();
     res.send(service);
   })
+  
+  app.put('/admin/:email',async(req,res)=>{
+    const email=req.params.email;
+    const query = {email:email};
+    const userEmail=req.body;
+    
+    const updateDoc = {
+      $set: userEmail
+    };
+    const result = await userCollection.updateOne(query, updateDoc);
+    
+    res.send(result);
+  })
+
+  app.get('/users/:email',async(req,res)=>{
+    const email=req.params.email;
+    const query = {email:email};
+    const service = await userCollection.findOne(query);
+    res.send(service);
+  })
+
+  // payment intend part
+  app.post("/create-payment-intent", async (req, res) => {
+    const service = req.body;
+    const price=service.price;
+    const amount=price*100;
+
+     const paymentIntent = await stripe.paymentIntents.create({
+      amount:amount,
+      currency: "usd",
+      payment_method_types: [
+        "card"
+      ]
+    });
+  
+    res.send({ clientSecret: paymentIntent.client_secret});
+  });
+
 
    } finally {
      
