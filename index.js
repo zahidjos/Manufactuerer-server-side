@@ -91,7 +91,7 @@ async function run() {
    
 
 
-   app.get('/order/:id',async(req,res)=>{
+   app.get('/orders/:id',async(req,res)=>{
     const id=req.params.id;
     const query = {_id:ObjectId(id)};
     const service=await orderCollection.findOne(query);
